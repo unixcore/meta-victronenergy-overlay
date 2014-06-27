@@ -7,13 +7,9 @@ DEPENDS = "zlib libxml2 virtual/libiconv php-native lemon-native \
            libc-client openssl"
 DEPENDS_virtclass-native = "zlib-native libxml2-native"
 
-INC_PR = "r5"
+INC_PR = "r4"
 
-# The new PHP downloads server groups PHP releases by major version so find
-# the major version of the PHP recipe.
-PHP_MAJVER = "${@d.getVar('PV',1).split('.')[0]}"
-
-SRC_URI = "http://museum.php.net/php${PHP_MAJVER}/php-${PV}.tar.bz2"
+SRC_URI = "http://www.php.net/distributions/php-${PV}.tar.bz2"
 
 S = "${WORKDIR}/php-${PV}"
 
@@ -22,13 +18,11 @@ inherit autotools pkgconfig pythonnative gettext
 SSTATE_SCAN_FILES += "build-defs.h"
 
 # Common EXTRA_OECONF
-COMMON_EXTRA_OECONF = "--enable-sockets --enable-pcntl --enable-shared"
+COMMON_EXTRA_OECONF = "--enable-sockets --enable-pcntl --enable-shared --enable-opcache"
 EXTRA_OECONF = "--enable-mbstring \
                 --enable-wddx \
                 --enable-fpm \
-                --with-imap=${STAGING_DIR_HOST} \
                 --with-gettext=${STAGING_LIBDIR}/.. \
-                --with-imap-ssl=${STAGING_DIR_HOST} \
                 --with-zlib=${STAGING_LIBDIR}/.. \
                 --with-iconv=${STAGING_LIBDIR}/.. \
                 --with-libxml-dir=${STAGING_BINDIR_CROSS} \
@@ -56,7 +50,6 @@ PACKAGECONFIG[sqlite3] = "--with-sqlite3=${STAGING_LIBDIR}/.. \
 
 export PHP_NATIVE_DIR = "${STAGING_BINDIR_NATIVE}"
 export PHP_PEAR_PHP_BIN = "${STAGING_BINDIR_NATIVE}/php"
-CFLAGS += " -D_GNU_SOURCE"
 
 EXTRA_OEMAKE = "INSTALL_ROOT=${D}"
 
@@ -72,8 +65,9 @@ do_install_append_pn-php-native() {
 do_install_append_pn-php() {
     install -d ${D}/${sysconfdir}/
     if [ -d ${D}/${STAGING_DIR_NATIVE}/${sysconfdir} ];then
-         mv ${D}/${STAGING_DIR_NATIVE}/${sysconfdir}/* ${D}/${sysconfdir}/
+        mv ${D}/${STAGING_DIR_NATIVE}/${sysconfdir}/* ${D}/${sysconfdir}/
     fi
+    
     rm -rf ${D}/${TMPDIR}
     rm -rf ${D}/.registry
     rm -rf ${D}/.channels
@@ -96,7 +90,7 @@ do_install_append_pn-php() {
     done
 }
 
-PACKAGES = "${PN}-dbg ${PN}-cli ${PN}-cgi ${PN}-fpm ${PN}-fpm-apache2 ${PN}-pear ${PN}-dev ${PN}-staticdev ${PN}-doc ${PN}"
+PACKAGES = "${PN}-dbg ${PN}-cli ${PN}-cgi ${PN}-fpm ${PN}-fpm-apache2 ${PN}-pear ${PN}-dev ${PN}-staticdev ${PN}-doc ${PN} ${PN}-opcache ${PN}-opcache-dbg ${PN}-opcache-staticdev"
 
 RDEPENDS_${PN}-pear = "${PN}"
 RDEPENDS_${PN}-cli = "${PN}"
@@ -111,6 +105,9 @@ FILES_${PN}-cli = "${bindir}/php"
 FILES_${PN}-cgi = "${bindir}/php-cgi"
 FILES_${PN}-fpm = "${sbindir}/php-fpm ${sysconfdir}/php-fpm.conf ${datadir}/fpm ${sysconfdir}/init.d/php-fpm"
 FILES_${PN}-fpm-apache2 = "${sysconfdir}/apache2/conf.d/php-fpm.conf"
+FILES_${PN}-opcache = "/usr/lib/extensions/no-debug-non-zts-20121212/opcache.so"
+FILES_${PN}-opcache-dbg = "/usr/lib/extensions/no-debug-non-zts-20121212/.debug/opcache.so"
+FILES_${PN}-opcache-staticdev = "/usr/lib/extensions/no-debug-non-zts-20121212/opcache.a"
 CONFFILES_${PN}-fpm = "${sysconfdir}/php-fpm.conf"
 CONFFILES_${PN}-fpm-apache2 = "${sysconfdir}/apache2/conf.d/php-fpm.conf"
 INITSCRIPT_NAME_${PN}-fpm = "php-fpm"
