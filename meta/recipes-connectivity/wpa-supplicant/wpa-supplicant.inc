@@ -1,22 +1,29 @@
-DESCRIPTION = "A Client for Wi-Fi Protected Access (WPA)."
+SUMMARY = "Client for Wi-Fi Protected Access (WPA)"
 HOMEPAGE = "http://hostap.epitest.fi/wpa_supplicant/"
 BUGTRACKER = "http://hostap.epitest.fi/bugz/"
 SECTION = "network"
-LICENSE = "GPLv2 | BSD"
-LIC_FILES_CHKSUM = "file://../COPYING;md5=c54ce9345727175ff66d17b67ff51f58 \
-                    file://../README;md5=9bee93996fecdb70f807baceb29d84b9 \
-                    file://wpa_supplicant.c;beginline=1;endline=17;md5=372fb65dc23b228aec4e40e64de3e467"
-DEPENDS = "gnutls dbus libnl"
+LICENSE = "BSD"
+LIC_FILES_CHKSUM = "file://COPYING;md5=ab87f20cd7e8c0d0a6539b34d3791d0e \
+                    file://README;beginline=1;endline=56;md5=a07250b28e857455336bb59fc31cb845 \
+                    file://wpa_supplicant/wpa_supplicant.c;beginline=1;endline=12;md5=e8e021e30f3a6ab7c341b66b86626a5a"
+DEPENDS = "gnutls dbus libnl openssl libgcrypt"
 RRECOMMENDS_${PN} = "wpa-supplicant-passphrase wpa-supplicant-cli"
+
+SYSTEMD_SERVICE_${PN} = "wpa_supplicant.service wpa_supplicant-nl80211@.service wpa_supplicant-wired@.service"
+SYSTEMD_AUTO_ENABLE = "disable"
 
 SRC_URI = "http://hostap.epitest.fi/releases/wpa_supplicant-${PV}.tar.gz \
            file://defconfig-gnutls \
            file://wpa-supplicant.sh \
            file://wpa_supplicant.conf \
            file://wpa_supplicant.conf-sane \
-           file://99_wpa_supplicant"
+           file://99_wpa_supplicant \
+           file://fix-libnl3-host-contamination.patch \
+          "
+SRC_URI[md5sum] = "238e8e888bbd558e1a57e3eb28d1dd07"
+SRC_URI[sha256sum] = "e0d8b8fd68a659636eaba246bb2caacbf53d22d53b2b6b90eb4b4fef0993c8ed"
 
-S = "${WORKDIR}/wpa_supplicant-${PV}/wpa_supplicant"
+S = "${WORKDIR}/wpa_supplicant-${PV}"
 
 PACKAGES_prepend = "wpa-supplicant-passphrase wpa-supplicant-cli "
 FILES_wpa-supplicant-passphrase = "${bindir}/wpa_passphrase"
@@ -25,7 +32,8 @@ FILES_${PN} += "${datadir}/dbus-1/system-services/*"
 CONFFILES_${PN} += "${sysconfdir}/wpa_supplicant.conf"
 
 do_configure () {
-	install -m 0755 ${WORKDIR}/defconfig-gnutls .config
+	install -m 0755 ${WORKDIR}/defconfig-gnutls wpa_supplicant/.config
+	echo "CFLAGS +=\"-I${STAGING_INCDIR}/libnl3\"" >> wpa_supplicant/.config
 }
 
 export EXTRA_CFLAGS = "${CFLAGS}"
@@ -33,19 +41,20 @@ export BINDIR = "${sbindir}"
 
 do_compile () {
 	unset CFLAGS CPPFLAGS CXXFLAGS
-	oe_runmake
+	sed -e "s:CFLAGS\ =.*:& \$(EXTRA_CFLAGS):g" -i ${S}/src/lib.rules
+	oe_runmake -C wpa_supplicant
 }
 
 do_install () {
 	install -d ${D}${sbindir}
-	install -m 755 wpa_supplicant ${D}${sbindir}
-	install -m 755 wpa_cli        ${D}${sbindir}
+	install -m 755 wpa_supplicant/wpa_supplicant ${D}${sbindir}
+	install -m 755 wpa_supplicant/wpa_cli        ${D}${sbindir}
 
 	install -d ${D}${bindir}
-	install -m 755 wpa_passphrase ${D}${bindir}
+	install -m 755 wpa_supplicant/wpa_passphrase ${D}${bindir}
 
 	install -d ${D}${docdir}/wpa_supplicant
-	install -m 644 README ${WORKDIR}/wpa_supplicant.conf ${D}${docdir}/wpa_supplicant
+	install -m 644 wpa_supplicant/README ${WORKDIR}/wpa_supplicant.conf ${D}${docdir}/wpa_supplicant
 
 	install -d ${D}${sysconfdir}
 	install -m 600 ${WORKDIR}/wpa_supplicant.conf-sane ${D}${sysconfdir}/wpa_supplicant.conf
@@ -58,9 +67,14 @@ do_install () {
 	ln -sf ../if-pre-up.d/wpa-supplicant if-post-down.d/wpa-supplicant
 
 	install -d ${D}/${sysconfdir}/dbus-1/system.d
-	install -m 644 ${S}/dbus/dbus-wpa_supplicant.conf ${D}/${sysconfdir}/dbus-1/system.d
+	install -m 644 ${S}/wpa_supplicant/dbus/dbus-wpa_supplicant.conf ${D}/${sysconfdir}/dbus-1/system.d
 	install -d ${D}/${datadir}/dbus-1/system-services
-	install -m 644 ${S}/dbus/*.service ${D}/${datadir}/dbus-1/system-services
+	install -m 644 ${S}/wpa_supplicant/dbus/*.service ${D}/${datadir}/dbus-1/system-services
+
+	if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
+		install -d ${D}/${systemd_unitdir}/system
+		install -m 644 ${S}/wpa_supplicant/systemd/*.service ${D}/${systemd_unitdir}/system
+	fi
 
 	install -d ${D}/etc/default/volatiles
 	install -m 0644 ${WORKDIR}/99_wpa_supplicant ${D}/etc/default/volatiles
@@ -68,13 +82,8 @@ do_install () {
 
 pkg_postinst_wpa-supplicant () {
 	# If we're offline, we don't need to do this.
-	if [ "x$D" != "x" ]; then
-		exit 0
+	if [ "x$D" = "x" ]; then
+		killall -q -HUP dbus-daemon || true
 	fi
 
-	DBUSPID=`pidof dbus-daemon`
-
-	if [ "x$DBUSPID" != "x" ]; then
-		/etc/init.d/dbus-1 reload || true
-	fi
 }
