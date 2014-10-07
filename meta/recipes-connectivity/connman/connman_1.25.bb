@@ -7,12 +7,13 @@ SRC_URI  = "https://www.kernel.org/pub/linux/network/connman/connman-${PV}.tar.x
             file://main.conf \
             file://connman \
             file://connmand-watch.sh \
+            file://connman_IgnoreInvalidKey_Arfailure.patch \
            "
 
 SRC_URI[md5sum] = "a449d2e49871494506e48765747e6624"
 SRC_URI[sha256sum] = "c1d266d6be18d2f66231f3537a7ed17b57637ca43c27328bc13c508cbeacce6e"
 
-PR = "${INC_PR}.0"
+PR = "${INC_PR}.1"
 
 RCONFLICTS_${PN} = "ntpdate ntp-utils"
 RREPLACES = "${RCONFLICTS_${PN}}"
