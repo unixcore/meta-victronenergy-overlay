@@ -15,9 +15,6 @@ SRC_URI[sha256sum] = "c1d266d6be18d2f66231f3537a7ed17b57637ca43c27328bc13c508cbe
 
 PR = "${INC_PR}.1"
 
-RCONFLICTS_${PN} = "ntpdate ntp-utils"
-RREPLACES = "${RCONFLICTS_${PN}}"
-
 do_install_append() {
 	install -d ${D}${sysconfdir}/connman
 	install -m 0644 ${WORKDIR}/main.conf ${D}${sysconfdir}/connman/main.conf
