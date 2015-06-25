@@ -20,7 +20,7 @@ DEPENDS  = "dbus glib-2.0 ppp iptables gnutls \
             ${@base_contains('DISTRO_FEATURES', '3g','ofono', '', d)} \
             "
 
-INC_PR = "r0"
+INC_PR = "r2"
 
 TIST = ""
 TIST_powerpc = ""
@@ -43,7 +43,7 @@ EXTRA_OECONF += "\
 "
 
 INITSCRIPT_NAME = "connman"
-INITSCRIPT_PARAMS = "start 05 5 2 3 . stop 22 0 1 6 ."
+INITSCRIPT_PARAMS = "start 70 5 2 3 . stop 22 0 1 6 ."
 
 # IMPORTANT: because xuser is shared with rootless X, please make sure the
 # USERADD_PARAM is in sync with the one in xserver-nodm-init.bb
