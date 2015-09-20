@@ -3,8 +3,9 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files"
 SRC_URI += "file://hiawatha.conf \ 
             file://phpinfo.php \            
            "
-           
-PR = "r2.1"           
+RDEPENDS_${PN} += "php-fpm"
+
+PR = "r2.6"
 
 EXTRA_OECMAKE = " -DENABLE_IPV6=OFF \
                   -DENABLE_CACHE=OFF \
