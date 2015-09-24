@@ -1,6 +1,6 @@
 require php.inc
 
-LIC_FILES_CHKSUM = "file://LICENSE;md5=5bb09683f8f09b15b7076f4b4c31d61f"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=464ca70af214d2407f6b7d4458158afd"
 
 PR = "${INC_PR}.0"
 
@@ -20,5 +20,5 @@ SRC_URI_append_pn-php += "file://iconv.patch \
             file://php-fpm-apache.conf \
 "
 
-SRC_URI[md5sum] = "e26e90af25ee6505dc18855e0180ffe9"
-SRC_URI[sha256sum] = "e58a4a754eb18d2d8b1a120cad5cce4ed24a7db5d49eca5830a40e4c8ca78b9c"
+SRC_URI[md5sum] = "2a0eadad872978ae57e6756187625c00"
+SRC_URI[sha256sum] = "fbcee579ecc77cad6960a541116aee669cf145c2cd9a54bf60503a870843b946"
