@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/php"
+FILESEXTRAPATHS_prepend := "${THISDIR}/php:"
 
 SRC_URI += " file://php-fpm.conf \
            "
