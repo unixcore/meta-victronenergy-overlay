@@ -58,7 +58,7 @@ inherit autotools pkgconfig update-rc.d useradd
 # control.  Really the at_console flag should work, which would mean that
 # both this and the xuser patch can be dropped.
 do_compile_append() {
-	sed -i -e s:deny:allow:g src/connman-dbus.conf
+	sed -i -e s:deny:allow:g ${S}/src/connman-dbus.conf
 }
 
 do_install_append() {
@@ -66,9 +66,9 @@ do_install_append() {
 	install -m 0755 ${WORKDIR}/connman ${D}${sysconfdir}/init.d/connman
 
 	install -d ${D}${bindir}
-	install -m 0755 ${S}/tools/*-test ${D}${bindir}
-	#install -m 0755 ${S}/tools/wispr ${D}${bindir}
-	install -m 0755 ${S}/client/connmanctl ${D}${bindir}
+	install -m 0755 ${B}/tools/*-test ${D}${bindir}
+	#install -m 0755 ${B}/tools/wispr ${D}${bindir}
+	install -m 0755 ${B}/client/connmanctl ${D}${bindir}
 
 	# We don't need to package an empty directory
 	rmdir ${D}${libdir}/connman/scripts
