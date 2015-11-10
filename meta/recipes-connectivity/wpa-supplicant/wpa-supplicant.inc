@@ -36,6 +36,7 @@ CONFFILES_${PN} += "${sysconfdir}/wpa_supplicant.conf"
 do_configure () {
 	install -m 0755 ${WORKDIR}/defconfig-gnutls wpa_supplicant/.config
 	echo "CFLAGS +=\"-I${STAGING_INCDIR}/libnl3\"" >> wpa_supplicant/.config
+	echo "DRV_CFLAGS +=\"-I${STAGING_INCDIR}/libnl3\"" >> wpa_supplicant/.config
 }
 
 export EXTRA_CFLAGS = "${CFLAGS}"
