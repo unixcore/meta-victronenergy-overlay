@@ -4,7 +4,7 @@ SRC_URI += "file://hiawatha.conf \
            "
 RDEPENDS_${PN} += "php-fpm"
 
-PR = "r2.7"
+PR = "r2.8"
 
 EXTRA_OECMAKE = " -DENABLE_IPV6=OFF \
                   -DENABLE_CACHE=OFF \
@@ -27,4 +27,7 @@ EXTRA_OECMAKE = " -DENABLE_IPV6=OFF \
 do_install_append() {
 	install -m 0644 ${WORKDIR}/hiawatha.conf ${D}${sysconfdir}/hiawatha/hiawatha.conf
 	install -d ${D}${sysconfdir}/hiawatha/sites-enabled
+	install -d ${D}${sysconfdir}/default/volatiles
+	echo "d root root 0755 ${localstatedir}/volatile/log/hiawatha none" \
+	     > ${D}${sysconfdir}/default/volatiles/99_hiawatha    
 }
