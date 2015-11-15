@@ -4,12 +4,12 @@
 PACKAGES =+ "${PN}-rt2800 ${PN}-rt73"
 PR .= ".0"
 
-LICENSE_${PN}-rt2800 = "LICENCE.ralink-firmware.txt"
+#LICENSE_${PN}-rt2800 = "LICENCE.ralink-firmware.txt"
 FILES_${PN}-rt2800 = " \
   /lib/firmware/rt2870.bin \
 "
 
-LICENSE_${PN}-rt73 = "LICENCE.ralink-firmware.txt"
+#LICENSE_${PN}-rt73 = "LICENCE.ralink-firmware.txt"
 FILES_${PN}-rt73 = " \
   /lib/firmware/rt73.bin \
 "
