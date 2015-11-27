@@ -8,3 +8,5 @@ the bbappend themselves are not available.
 In short, bbappends and possible conflicting packages should be here.
 Packages which are provided by Victron Energy should be in the
 meta-victronenergy layer.
+
+More info on the [Venus wiki pages](https://github.com/victronenergy/venus/wiki)
