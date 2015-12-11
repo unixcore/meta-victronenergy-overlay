@@ -1,0 +1,105 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          dbus
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: D-Bus systemwide message bus
+# Description:       D-Bus is a simple interprocess messaging system, used
+#                    for sending messages between applications.
+### END INIT INFO
+#
+# -*- coding: utf-8 -*-
+# Debian init.d script for D-BUS
+# Copyright © 2003 Colin Walters <walters@debian.org>
+
+# set -e
+
+# Source function library.
+. /etc/init.d/functions
+
+DAEMON=@bindir@/dbus-daemon
+NAME=dbus
+DAEMONUSER=messagebus           # must match /etc/dbus-1/system.conf
+PIDFILE=/var/run/messagebus.pid # must match /etc/dbus-1/system.conf
+UUIDDIR=/var/lib/dbus
+DESC="system message bus"
+
+start_it_up()
+{
+  mkdir -p "`dirname $PIDFILE`"
+  if [ -e $PIDFILE ]; then
+    PIDDIR=/proc/$(cat $PIDFILE)
+    if [ -d ${PIDDIR} -a  "$(readlink -f ${PIDDIR}/exe)" = "${DAEMON}" ]; then 
+      echo "$DESC already started; not starting."
+    else
+      echo "Removing stale PID file $PIDFILE."
+      rm -f $PIDFILE
+    fi
+  fi
+
+  if [ ! -d $UUIDDIR ]; then
+    mkdir -p $UUIDDIR
+    chown $DAEMONUSER $UUIDDIR
+    chgrp $DAEMONUSER $UUIDDIR
+  fi
+ 
+  dbus-uuidgen --ensure  
+
+  echo -n "Starting $DESC: "
+  # note dbus-daemon-watch.sh start dbus-daemon to catch crashes
+  start-stop-daemon -o --start --quiet --pidfile $PIDFILE \
+    --user $DAEMONUSER --exec /usr/bin/dbus-daemon-watch.sh -- --system
+  # wait for the socket creation
+  inotifywait -e create /var/run/dbus --timeout 10
+}
+
+shut_it_down()
+{
+  # kill the script monitoring dbus execution
+  if [ "X${pid=$(pidof -x /usr/bin/dbus-daemon-watch.sh)}" != "X" ]; then
+    kill $pid
+  fi
+
+  echo "Stopping $DESC"
+  start-stop-daemon --stop  --quiet --pidfile $PIDFILE --user $DAEMONUSER
+  rm -f $PIDFILE
+}
+
+reload_it()
+{
+  echo -n "Reloading $DESC config: "
+  dbus-send --print-reply --system --type=method_call \
+            --dest=org.freedesktop.DBus \
+            / org.freedesktop.DBus.ReloadConfig > /dev/null
+  # hopefully this is enough time for dbus to reload it's config file.
+  echo "done."
+}
+
+case "$1" in
+  start)
+    start_it_up
+  ;;
+  stop)
+    shut_it_down
+  ;;
+  status)
+    status $DAEMON
+    exit $?
+  ;;
+  reload|force-reload)
+    reload_it
+  ;;
+  restart)
+    shut_it_down
+    sleep 1
+    start_it_up
+  ;;
+  *)
+    echo "Usage: /etc/init.d/$NAME {start|stop|status|restart|reload|force-reload}" >&2
+    exit 1
+  ;;
+esac
+
+exit 0
