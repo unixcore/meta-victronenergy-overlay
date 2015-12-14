@@ -31,6 +31,9 @@ fi
 
 ln -sf /data/log /log
 ln -sf /data/log /var/log
-	
+# not sure how this recursive link is getting in there
+# remove for now
+rm -rf /data/log/log
+
 : exit 0
 
