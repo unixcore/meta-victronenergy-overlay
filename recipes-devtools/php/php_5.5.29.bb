@@ -7,6 +7,7 @@ PR = "${INC_PR}.0"
 SRC_URI += " \
 		file://acinclude-xml2-config.patch \
 		file://0001-php-don-t-use-broken-wrapper-for-mkdir.patch \
+		file://0001-PATCH-3-8-acinclude-use-pkgconfig-for-libxml2-config.patch \
 		file://0001-brutal-hack-to-make-cross-compiling-work-for-linux.patch \
 		file://0001-workaround-dlopen-not-correctly-polled.patch \
 		file://0001-AC_TRY_RUN-won-t-work-when-cross-compiling.patch \
