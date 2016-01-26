@@ -4,7 +4,7 @@ SECTION = "console/network"
 LICENSE = "PHP-3.0"
 BBCLASSEXTEND = "native"
 DEPENDS = "zlib libxml2 virtual/libiconv php-native lemon-native \
-           libc-client openssl"
+           openssl"
 DEPENDS_virtclass-native = "zlib-native libxml2-native"
 
 INC_PR = "r4"
