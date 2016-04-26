@@ -1,3 +1,7 @@
+NOTE: INACTIVE.
+Since venus v1.31, this meta is no longer used. Contents moved to:
+https://github.com/victronenergy/meta-victronenergy/tree/master/meta-venus
+
 Victron Energy changes / appends to other layers.
 
 This layer appends to other layers or provides complete recipes which
